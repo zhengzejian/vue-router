@@ -80,7 +80,8 @@ export default class VueRouter {
   get currentRoute (): ?Route {
     return this.history && this.history.current
   }
-
+  //在根组件beforeCreate生命周期内触发
+  //app参数为根组件实例
   init (app: any /* Vue component instance */) {
     process.env.NODE_ENV !== 'production' && assert(
       install.installed,
@@ -91,9 +92,9 @@ export default class VueRouter {
     this.apps.push(app)
 
     // set up app destroyed handler
-    // https://github.com/vuejs/vue-router/issues/2639
+    // https://github.com/vuejs/vue-router/issues/2639    
     app.$once('hook:destroyed', () => {
-      // clean out app from this.apps array once destroyed
+      //当app卸载的时候， 删除apps里的根组件实例,避免内存使用量增加/泄漏      
       const index = this.apps.indexOf(app)
       if (index > -1) this.apps.splice(index, 1)
       // ensure we still have a main app or null if no apps
@@ -101,8 +102,8 @@ export default class VueRouter {
       if (this.app === app) this.app = this.apps[0] || null
 
       if (!this.app) {
-        // clean up event listeners
-        // https://github.com/vuejs/vue-router/issues/2341
+        //方法实现在 src/history/base
+        //遍历listeners，清空所有监听事件
         this.history.teardownListeners()
       }
     })

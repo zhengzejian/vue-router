@@ -115,18 +115,22 @@ function ensureSlash (): boolean {
   return false
 }
 
+
+/**
+    最后返回的就是location.hash.slice(1)
+    其中做了关于locaiton.hash的兼容处理
+    以及decodeURI hash的字符串（不包括后面的search）
+ */
 export function getHash (): string {
-  // We can't use window.location.hash here because it's not
-  // consistent across browsers - Firefox will pre-decode it!
+  // 不能直接使用location.href 
+  //因为有兼容问题，Firefox会将它decode
   let href = window.location.href
   const index = href.indexOf('#')
-  // empty path
+  //如果不存在# 则直接返回空串
   if (index < 0) return ''
 
+  //decodeURI hash的字符串
   href = href.slice(index + 1)
-  // decode the hash but not the search or hash
-  // as search(query) is already decoded
-  // https://github.com/vuejs/vue-router/issues/2708
   const searchIndex = href.indexOf('?')
   if (searchIndex < 0) {
     const hashIndex = href.indexOf('#')
@@ -136,7 +140,6 @@ export function getHash (): string {
   } else {
     href = decodeURI(href.slice(0, searchIndex)) + href.slice(searchIndex)
   }
-
   return href
 }
 

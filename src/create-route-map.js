@@ -10,8 +10,8 @@ export function createRouteMap (
   oldPathMap?: Dictionary<RouteRecord>,
   oldNameMap?: Dictionary<RouteRecord>
 ): {
-  pathList: Array<string>,
-  pathMap: Dictionary<RouteRecord>,
+  pathList: Array<string>,  //所以路由的路径集合
+  pathMap: Dictionary<RouteRecord>,   //所有路径对应组件的映射
   nameMap: Dictionary<RouteRecord>
 } {
   // the path list is used to control path matching priority
@@ -45,7 +45,6 @@ export function createRouteMap (
       warn(false, `Non-nested routes must include a leading slash character. Fix the following routes: \n${pathNames}`)
     }
   }
-
   return {
     pathList,
     pathMap,

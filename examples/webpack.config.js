@@ -8,7 +8,7 @@ module.exports = {
   node: {
     __dirname: true
   },
-
+  devtool: 'source-map',
   mode: process.env.NODE_ENV || 'development',
 
   entry: fs.readdirSync(__dirname).reduce((entries, dir) => {

@@ -84,7 +84,9 @@ export class HTML5History extends History {
     return getLocation(this.base)
   }
 }
-
+//返回应用url当前的路径
+//base: 应用的基本路径
+//判断如果有base， 则截取base以后的字符
 export function getLocation (base: string): string {
   let path = decodeURI(window.location.pathname)
   if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {

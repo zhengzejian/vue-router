@@ -163,11 +163,11 @@ export function createMatcher (
     }
     return createRoute(record, location, redirectedFrom, router)
   }
-
   return {
     match,
     addRoutes
   }
+  
 }
 
 function matchRoute (

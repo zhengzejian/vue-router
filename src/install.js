@@ -4,6 +4,7 @@ import Link from './components/link'
 export let _Vue
 
 export function install (Vue) {
+  //判断vue-router是否安装，如果已安装直接返回
   if (install.installed && _Vue === Vue) return
   install.installed = true
 
@@ -17,11 +18,14 @@ export function install (Vue) {
       i(vm, callVal)
     }
   }
-
+  //在Vue全局混入
   Vue.mixin({
     beforeCreate () {
+      //只有根组件设置了router选项，所以只有一开始走这一步
       if (isDef(this.$options.router)) {
+        //_routerRoot 为根组件实例
         this._routerRoot = this
+        //_router 为VueRouter实例
         this._router = this.$options.router
         this._router.init(this)
         Vue.util.defineReactive(this, '_route', this._router.history.current)

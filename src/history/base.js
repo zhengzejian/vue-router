@@ -20,9 +20,9 @@ import {
 } from './errors'
 
 export class History {
-  router: Router
+  router: Router      //VueRouter实例
   base: string
-  current: Route
+  current: Route 
   pending: ?Route
   cb: (r: Route) => void
   ready: boolean
@@ -51,6 +51,8 @@ export class History {
     this.readyErrorCbs = []
     this.errorCbs = []
     this.listeners = []
+
+
   }
 
   listen (cb: Function) {
@@ -81,6 +83,7 @@ export class History {
     // catch redirect option https://github.com/vuejs/vue-router/issues/3201
     try {
       route = this.router.match(location, this.current)
+      debugger
     } catch (e) {
       this.errorCbs.forEach(cb => {
         cb(e)

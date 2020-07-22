@@ -5,6 +5,7 @@ import { stringifyQuery } from './query'
 
 const trailingSlashRE = /\/?$/
 
+//生成route 数据
 export function createRoute (
   record: ?RouteRecord,
   location: Location,
@@ -34,6 +35,7 @@ export function createRoute (
   return Object.freeze(route)
 }
 
+//克隆对象
 function clone (value) {
   if (Array.isArray(value)) {
     return value.map(clone)
@@ -48,7 +50,7 @@ function clone (value) {
   }
 }
 
-// the starting route that represents the initial state
+// 初始状态的起始路由
 export const START = createRoute(null, {
   path: '/'
 })

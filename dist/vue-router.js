@@ -7,7 +7,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.VueRouter = factory());
-}(this, function () { 'use strict';
+}(this, (function () { 'use strict';
 
   /*  */
 
@@ -221,7 +221,8 @@
       parsedQuery = {};
     }
     for (var key in extraQuery) {
-      parsedQuery[key] = extraQuery[key];
+      var value = extraQuery[key];
+      parsedQuery[key] = Array.isArray(value) ? value.map(function (v) { return '' + v; }) : '' + value;
     }
     return parsedQuery
   }
@@ -1222,6 +1223,7 @@
   var _Vue;
 
   function install (Vue) {
+    //判断vue-router是否安装，如果已安装直接返回
     if (install.installed && _Vue === Vue) { return }
     install.installed = true;
 
@@ -1235,11 +1237,14 @@
         i(vm, callVal);
       }
     };
-
+    //在Vue全局混入
     Vue.mixin({
       beforeCreate: function beforeCreate () {
+        //只有根组件设置了router选项，所以只有一开始走这一步
         if (isDef(this.$options.router)) {
+          //设置私有属性_routerRoot 为根组件实例
           this._routerRoot = this;
+          //将VueRouter实例 设置到this._router
           this._router = this.$options.router;
           this._router.init(this);
           Vue.util.defineReactive(this, '_route', this._router.history.current);
@@ -2127,7 +2132,17 @@
   ) {
       var this$1 = this;
 
-    var route = this.router.match(location, this.current);
+    var route;
+    // catch redirect option https://github.com/vuejs/vue-router/issues/3201
+    try {
+      route = this.router.match(location, this.current);
+    } catch (e) {
+      this.errorCbs.forEach(function (cb) {
+        cb(e);
+      });
+      // Exception should still be thrown
+      throw e
+    }
     this.confirmTransition(
       route,
       function () {
@@ -2527,7 +2542,9 @@
 
     return HTML5History;
   }(History));
-
+  //返回应用url当前的路径
+  //base: 应用的基本路径
+  //判断如果有base， 则截取base以后的字符
   function getLocation (base) {
     var path = decodeURI(window.location.pathname);
     if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
@@ -2660,18 +2677,22 @@
     return false
   }
 
+
+  /**
+      最后返回的就是location.hash.slice(1)
+      其中做了关于locaiton.hash的兼容处理
+      以及decodeURI hash的字符串（不包括后面的search）
+   */
   function getHash () {
-    // We can't use window.location.hash here because it's not
-    // consistent across browsers - Firefox will pre-decode it!
+    // 不能直接使用location.href 
+    //因为有兼容问题，Firefox会将它decode
     var href = window.location.href;
     var index = href.indexOf('#');
-    // empty path
+    //如果不存在# 则直接返回空串
     if (index < 0) { return '' }
 
+    //decodeURI hash的字符串
     href = href.slice(index + 1);
-    // decode the hash but not the search or hash
-    // as search(query) is already decoded
-    // https://github.com/vuejs/vue-router/issues/2708
     var searchIndex = href.indexOf('?');
     if (searchIndex < 0) {
       var hashIndex = href.indexOf('#');
@@ -2681,7 +2702,6 @@
     } else {
       href = decodeURI(href.slice(0, searchIndex)) + href.slice(searchIndex);
     }
-
     return href
   }
 
@@ -2837,7 +2857,8 @@
   prototypeAccessors.currentRoute.get = function () {
     return this.history && this.history.current
   };
-
+  //在根组件beforeCreate生命周期内触发
+  //app参数为根组件实例
   VueRouter.prototype.init = function init (app /* Vue component instance */) {
       var this$1 = this;
 
@@ -2850,9 +2871,9 @@
     this.apps.push(app);
 
     // set up app destroyed handler
-    // https://github.com/vuejs/vue-router/issues/2639
+    // https://github.com/vuejs/vue-router/issues/2639    
     app.$once('hook:destroyed', function () {
-      // clean out app from this.apps array once destroyed
+      //当app卸载的时候， 删除apps里的根组件实例,避免内存使用量增加/泄漏      
       var index = this$1.apps.indexOf(app);
       if (index > -1) { this$1.apps.splice(index, 1); }
       // ensure we still have a main app or null if no apps
@@ -2860,8 +2881,8 @@
       if (this$1.app === app) { this$1.app = this$1.apps[0] || null; }
 
       if (!this$1.app) {
-        // clean up event listeners
-        // https://github.com/vuejs/vue-router/issues/2341
+        //方法实现在 src/history/base
+        //遍历listeners，清空所有监听事件
         this$1.history.teardownListeners();
       }
     });
@@ -2877,8 +2898,18 @@
     var history = this.history;
 
     if (history instanceof HTML5History || history instanceof HashHistory) {
-      var setupListeners = function () {
+      var handleInitialScroll = function (routeOrError) {
+        var from = history.current;
+        var expectScroll = this$1.options.scrollBehavior;
+        var supportsScroll = supportsPushState && expectScroll;
+
+        if (supportsScroll && 'fullPath' in routeOrError) {
+          handleScroll(this$1, routeOrError, from, false);
+        }
+      };
+      var setupListeners = function (routeOrError) {
         history.setupListeners();
+        handleInitialScroll(routeOrError);
       };
       history.transitionTo(history.getCurrentLocation(), setupListeners, setupListeners);
     }
@@ -3021,4 +3052,5 @@
 
   return VueRouter;
 
-}));
+})));
+//# sourceMappingURL=vue-router.js.map
